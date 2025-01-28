@@ -4,6 +4,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken'
 import { NextFunction, request, Request, Response } from "express";
 import catchAsync from "../utils/catchAsync";
 import User from '../app/modules/user/user.model';
+import config from '../app/config';
 
 const auth = (...requireRole:string[])=>{
 
@@ -31,10 +32,10 @@ const auth = (...requireRole:string[])=>{
             throw new Error("Authorization token is missing");
         }
         
-       const decoded = jwt.verify(token,"secrect") as JwtPayload
+       const decoded = jwt.verify(token,config.jwt_secret as string) as JwtPayload
        console.log(decoded);
     
-       const {email,role} = decoded;
+       const {role} = decoded;
        const user = await User.findById(decoded.id); 
        //const user = await User.findOne({email});
        if(!user){

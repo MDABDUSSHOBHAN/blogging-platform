@@ -1,22 +1,33 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../app/modules/user/user.model";
-import jwt from 'jsonwebtoken'
-import { any } from "zod";
- // Assuming you have a User model
+import jwt from 'jsonwebtoken';
+import config from "../app/config";
 
-export const verifyToken = async (req:Request, res:Response, next:NextFunction) => {
 
+// Define the token payload structure
+interface DecodedToken {
+  id: string;
+}
+
+export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'Authorization header is missing or malformed' });
+    return res.status(401).json({ success: false, message: 'authorization header is missing or malformed' });
   }
 
   const token = authHeader.split(' ')[1]; // Extract token
-  try {
-    const decoded = jwt.verify(token, 'secrect'); // Replace with your secret key
-    const user = await User.findById(decoded.id ); // Fetch user from DB based on token's payload
 
+  try {
+    // Decode and verify token
+    const decoded = jwt.verify(token,config.jwt_secret as string ) as DecodedToken;
+
+    if (!decoded || !decoded.id) {
+      return res.status(403).json({ success: false, message: 'Invalid token payload' });
+    }
+
+    // Fetch user from DB
+    const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -28,5 +39,3 @@ export const verifyToken = async (req:Request, res:Response, next:NextFunction) 
     return res.status(403).json({ success: false, message: 'Invalid or expired token' });
   }
 };
-
-

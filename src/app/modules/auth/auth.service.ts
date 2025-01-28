@@ -1,3 +1,5 @@
+
+import config from "../../config";
 import { IUser } from "../user/user.interface";
 import User from "../user/user.model";
 import { ILoginUser } from "./auth.interfae";
@@ -40,7 +42,7 @@ if(!isPasswordMatch){
 
 
 //Here will be generate json webToken
-const token = jwt.sign({email:user?.email,role:user?.role,id:user?._id},"secrect",{expiresIn:'7d'});
+const token = jwt.sign({email:user?.email,role:user?.role,id:user?._id},config.jwt_secret as string,{expiresIn:'10d'});
 
 
 
